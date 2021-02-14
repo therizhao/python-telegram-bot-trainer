@@ -15,6 +15,7 @@ bot.
 """
 
 import logging
+import threading
 
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
@@ -38,10 +39,15 @@ def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
 
+def send_100_times(update: Update, message):
+    for i in range(100):
+        update.message.reply_text(message)
 
 def echo(update: Update, context: CallbackContext) -> None:
     """Echo the user message."""
-    update.message.reply_text(update.message.text)
+    x = threading.Thread(target=send_100_times, args=(update, update.message.text))
+    x.start()
+         
 
 
 def main():
