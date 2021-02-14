@@ -1,4 +1,6 @@
-# Python telegram bot repo for SOGP
+# Python telegram bot trainer
+
+Your ultimate python telegram trainer bot
 
 ## Demo bot
 
