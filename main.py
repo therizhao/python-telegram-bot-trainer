@@ -27,6 +27,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+player1 = ''
+player2 = ''
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -39,6 +41,50 @@ def help_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
 
+def evaluate(update: Update):
+    global player1
+    global player2
+
+    # If both players have input
+    if player1 != '' and player2 != '':
+        # evaluate result
+        # both use same thing -> draw
+        if player1 == player2:
+            update.message.reply_text('draw')
+        elif player1 == 'scissors' and player2 == 'paper':
+            update.message.reply_text('player1 wins')
+        elif player1 == 'paper' and player2 == 'scissors':
+            update.message.reply_text('player2 wins')
+        
+        # clear input
+        player1 = ''
+        player2 = ''
+
+def scissors(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /scissors is issued."""
+    global player1
+    global player2
+
+    if player1 == '':
+        player1 = 'scissors'
+    else:
+        player2 = 'scissors'
+    
+    evaluate(update)
+
+def paper(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /paper is issued."""
+    global player1
+    global player2
+
+    if player1 == '':
+        player1 = 'paper'
+    else:
+        player2 = 'paper'
+    
+    evaluate(update)
+
+
 def send_100_times(update: Update, message):
     for i in range(100):
         update.message.reply_text(message)
@@ -47,8 +93,6 @@ def echo(update: Update, context: CallbackContext) -> None:
     """Echo the user message."""
     x = threading.Thread(target=send_100_times, args=(update, update.message.text))
     x.start()
-         
-
 
 def main():
     """Start the bot."""
@@ -62,8 +106,18 @@ def main():
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
 
+    # Scissors paper game
+    # use scissors /scissors
+    dispatcher.add_handler(CommandHandler("scissors", scissors))
+    # use paper /paper
+    dispatcher.add_handler(CommandHandler("paper", paper))
+
+
+
     # on noncommand i.e message - echo the message on Telegram
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+
+
+    # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
     # Start the Bot
     updater.start_polling()
