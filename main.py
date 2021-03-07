@@ -34,7 +34,10 @@ player2 = ''
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    update.message.reply_text('''Hello! Welcome to the scissors paper stone game! You are player 1. 
+
+What command do you want to choose? 
+/scissors /paper /stone''')
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
@@ -49,40 +52,69 @@ def evaluate(update: Update):
     if player1 != '' and player2 != '':
         # evaluate result
         # both use same thing -> draw
-        if player1 == player2:
-            update.message.reply_text('draw')
-        elif player1 == 'scissors' and player2 == 'paper':
-            update.message.reply_text('player1 wins')
-        elif player1 == 'paper' and player2 == 'scissors':
-            update.message.reply_text('player2 wins')
+
+        # Command to matrix index
+        cmds = {
+            'paper': 0,
+            'scissors': 1,
+            'stone': 2
+        }
+        # 1st index (i.e. row index): Player 2
+        # 2nd index (i.e. col index): Player 1
+        matrix = [
+             # P      ,  Sc   , St
+            [ 'draw', 'p1', 'p2'], # P
+            [ 'p2', 'draw', 'p1'],  # Sc
+            [ 'p1', 'p2', 'draw' ] # St
+        ]
+
+        # Translate string command to integer
+        player1Int = cmds[player1]
+        player2Int = cmds[player2]
+
+        result = matrix[player2Int][player1Int] # p1 | p2 | draw
+        pretty_output = {
+            "p1": "Player 1 wins. 🎉",
+            "p2": "Player 2 wins. 🎉",
+            "draw": "Draw"
+        }
+        update.message.reply_text(pretty_output[result])
+        update.message.reply_text('''Do you want to play again?
+If yes, click /start''')
         
         # clear input
         player1 = ''
         player2 = ''
 
-def scissors(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /scissors is issued."""
+def handle_cmd(update: Update, cmd: str) -> None:
     global player1
     global player2
-
+    # If it's player1
     if player1 == '':
-        player1 = 'scissors'
+        player1 = cmd
+        update.message.reply_text("Ok! Player1 chose " + cmd + ".")
+        update.message.reply_text('''Hello Player2. What command do you want to choose?
+/scissors /paper /stone''')
     else:
-        player2 = 'scissors'
+        # If it's player 2
+        player2 = cmd
+        update.message.reply_text("Ok! Player2 chose " + cmd + ".")
+        update.message.reply_text("Evaluating result...")
     
     evaluate(update)
+
+
+def scissors(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /scissors is issued."""
+    handle_cmd(update, "scissors")
+
+def stone(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /stone is issued."""
+    handle_cmd(update, "stone")
 
 def paper(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /paper is issued."""
-    global player1
-    global player2
-
-    if player1 == '':
-        player1 = 'paper'
-    else:
-        player2 = 'paper'
-    
-    evaluate(update)
+    handle_cmd(update, "paper")
 
 
 def send_100_times(update: Update, message):
@@ -97,12 +129,27 @@ def echo(update: Update, context: CallbackContext) -> None:
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("1646131932:AAHLYwh0qaE0T3Rk_hakznz75SCPs5Ds02s")
+    updater = Updater("1641071131:AAFmHdiogXRMrlq104PeP40mB78Av-rP63U")
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
+
+    '''
+
+    mcdonalds
+    cashier
+
+    1. give a set of instructions to cashier
+    2. if someone say mcchicken -> go make mcchicken -> give mcchicken -> collect $2
+
+    cashier (brain))
+    '''
     # on different commands - answer in Telegram
+    '''
+    /start
+
+    '''
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
 
@@ -111,7 +158,8 @@ def main():
     dispatcher.add_handler(CommandHandler("scissors", scissors))
     # use paper /paper
     dispatcher.add_handler(CommandHandler("paper", paper))
-
+    
+    dispatcher.add_handler(CommandHandler("stone", stone))
 
 
     # on noncommand i.e message - echo the message on Telegram
